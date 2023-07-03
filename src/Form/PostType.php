@@ -33,7 +33,8 @@ class PostType extends AbstractType
 {
     // Form types are services, so you can inject other services in them if needed
     public function __construct(
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
+        private \HTMLPurifier $purifier
     ) {
     }
 
@@ -81,6 +82,12 @@ class PostType extends AbstractType
                 $post = $event->getData();
                 if (null === $post->getSlug() && null !== $post->getTitle()) {
                     $post->setSlug($this->slugger->slug($post->getTitle())->lower());
+                }
+
+                if (null !== $post->getContent()) {
+                    $post->setContent(
+                        $this->purifier->purify($post->getContent())
+                    );
                 }
             })
         ;
